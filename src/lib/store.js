@@ -9,7 +9,8 @@
 import { createStore, applyMiddleware } from 'redux';
 import { connect } from 'react-redux';
 import thunk from 'redux-thunk';
-
+import _merge from 'lodash/merge';
+import _pick from 'lodash/pick';
 import rootReducer from './state/reducers';
 
 export const INITIAL_STORE_STATE = {
@@ -40,7 +41,10 @@ export function configureStore(appConfig) {
 
   // configure the initial state
   const preloadedQueryState = appConfig.urlHandlerApi
-    ? appConfig.urlHandlerApi.get(initialQueryState)
+    ? _merge(
+        initialQueryState,
+        _pick(appConfig.urlHandlerApi.get(), STORE_KEYS)
+      )
     : initialQueryState;
   const preloadedState = {
     query: preloadedQueryState,

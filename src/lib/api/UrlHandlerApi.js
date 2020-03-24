@@ -13,6 +13,7 @@ import _isObject from 'lodash/isObject';
 import _isNaN from 'lodash/isNaN';
 import _isNil from 'lodash/isNil';
 import _cloneDeep from 'lodash/cloneDeep';
+import STORE_KEYS from '../store';
 
 const pushHistory = query => {
   if (window.history.pushState) {
@@ -70,7 +71,7 @@ class UrlParamValidator {
    * @param {object} queryState the `query` state
    * @param {boolean} updateUrlQueryString a flag to push the new updated version of `query` state to the URL query string
    */
-  isValid = (key, value) => true;
+  isValid = (key, value) => key in STORE_KEYS;
 }
 
 /** Object responsible to update the URL query string and parse it to update the app state */
@@ -212,24 +213,13 @@ export class UrlHandlerApi {
     return result;
   };
 
-  _mergeParamsIntoState = (urlStateObj, queryState) => {
-    const _queryState = _cloneDeep(queryState);
-    Object.keys(urlStateObj).forEach(stateKey => {
-      if (stateKey in _queryState) {
-        _queryState[stateKey] = urlStateObj[stateKey];
-      }
-    });
-    return _queryState;
-  };
-
   /**
-   * Return a new version of the given `query` state with updated values parsed from the URL query string.
-   * @param {object} queryState the `query` state
+   * Return a `query` state object extracted from the URL query string.
    */
-  get = queryState => {
+  get = () => {
     const urlParamsObj = this.urlParser.parse(window.location.search);
     const urlStateObj = this._mapUrlParamsToQueryState(urlParamsObj);
-    const newQueryState = this._mergeParamsIntoState(urlStateObj, queryState);
+    const newQueryState = _cloneDeep(urlStateObj);
     const newUrlParams = this._mapQueryStateToUrlParams(newQueryState);
     replaceHistory(newUrlParams);
     return newQueryState;
